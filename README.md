@@ -1,9 +1,3 @@
-This project sounds like a wild ride into the deep end of AI research. You’ve got that "mad scientist" vibe going, which is great for a cutting-edge experimental tool, but we need to clean up the delivery so people take the warnings—and the tech—seriously.
-
-Here is a polished version of your **README.md** (Markdown looks much better than a .txt on GitHub). I’ve kept your intensity but fixed the grammar and organized the technical specs.
-
----
-
 # CTM-Text: The Continuous Thought Machine
 
 **CTM-Text** is a specialized implementation of the Continuous Thought Model architecture, optimized specifically for linguistic reasoning. Unlike standard Large Language Models (LLMs) that function on discrete input-output cycles, CTM-Text operates on a continuous state-space, aiming for a level of cognitive depth and reasoning capability that surpasses traditional transformer-based architectures.
@@ -19,6 +13,8 @@ Here is a polished version of your **README.md** (Markdown looks much better tha
 * **AUTONOMOUS POTENTIAL:** CTM-Text does not wait for you. It is "Always On," processing and producing 24/7. Use with extreme caution. This is not a chatbot; it is a step toward autonomous AGI.
 
 ---
+
+<img width="1914" height="948" alt="Hallo Jenny" src="https://github.com/user-attachments/assets/7e4ffee1-7830-41b6-913a-3cb151f8fe93" />
 
 ## 🛠 Technical Specifications
 
