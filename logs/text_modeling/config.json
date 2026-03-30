@@ -1,0 +1,17 @@
+{
+    "d_model": 2048,
+    "d_embedding": 1024,
+    "iterations": 48,
+    "heads": 16,
+    "seq_len": 32,
+    "n_synch": 32,
+    "memory_length": 15,
+    "memory_hidden_dims": 32,
+    "synapse_depth": 2,
+    "batch_size": 32,
+    "lr": 0.001,
+    "steps": 5000,
+    "log_dir": "logs/text_modeling",
+    "seed": 42,
+    "data_file": "tasks/text_modeling/data/german_thought_data_large.jsonl"
+}

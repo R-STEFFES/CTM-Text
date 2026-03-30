@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTM Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #252526;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-left {
+            border-right: 1px solid #3e3e42;
+        }
+        .sidebar-right {
+            border-left: 1px solid #3e3e42;
+        }
+        .sidebar h2 {
+            color: #4ec9b0;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #3e3e42;
+            padding-bottom: 5px;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        .info-label {
+            color: #858585;
+        }
+        .info-value {
+            color: #d4d4d4;
+            font-weight: bold;
+        }
+        .stat-box {
+            background-color: #333333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .stat-title {
+            font-size: 0.8em;
+            color: #858585;
+            margin-bottom: 5px;
+        }
+        .stat-bar-bg {
+            background-color: #1e1e1e;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            background-color: #0e639c;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .chat-container {
+            flex-grow: 1;
+            background-color: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+            box-shadow: none;
+        }
+        .header {
+            padding: 20px;
+            background-color: #333333;
+            border-bottom: 1px solid #3e3e42;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #4ec9b0;
+        }
+        .status {
+            font-size: 0.8em;
+            color: #858585;
+            margin-top: 5px;
+        }
+        .messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .message.user {
+            align_self: flex-end;
+            background-color: #0e639c;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+        .message.ctm {
+            align_self: flex-start;
+            background-color: #3e3e42;
+            color: #d4d4d4;
+            border-bottom-left-radius: 2px;
+        }
+        .message.ctm.thinking {
+            font-style: italic;
+            color: #858585;
+            background-color: transparent;
+            padding: 0;
+        }
+        .input-area {
+            padding: 20px;
+            background-color: #333333;
+            border-top: 1px solid #3e3e42;
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid #3e3e42;
+            background-color: #1e1e1e;
+            color: white;
+            outline: none;
+            font-size: 1em;
+        }
+        input[type="text"]:focus {
+            border-color: #0e639c;
+        }
+        button {
+            padding: 10px 25px;
+            border-radius: 25px;
+            border: none;
+            background-color: #0e639c;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #1177bb;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #424242;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f4f4f;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar sidebar-left">
+        <div>
+            <h2>Live Stats</h2>
+            <div class="stat-box">
+                <div class="stat-title">Confidence (Certainty)</div>
+                <div class="stat-bar-bg">
+                    <div class="stat-bar-fill" id="confidenceBar" style="background-color: #4ec9b0;"></div>
+                </div>
+                <div style="text-align: right; font-size: 0.8em; margin-top: 2px;" id="confidenceValue">0%</div>
+            </div>
+            
+            <div class="stat-box">
+                <div class="stat-title">Sync Magnitude</div>
+                <div class="stat-bar-bg">
+                    <div class="stat-bar-fill" id="syncBar" style="background-color: #ce9178;"></div>
+                </div>
+                <div style="text-align: right; font-size: 0.8em; margin-top: 2px;" id="syncValue">0.0</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-title">Speech Gate (Output Prob)</div>
+                <div class="stat-bar-bg">
+                    <div class="stat-bar-fill" id="speechBar" style="background-color: #dcdcaa;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                    <span id="speechStatus" style="font-size: 0.8em; font-weight: bold; color: #858585;">THINKING</span>
+                    <span id="speechValue" style="font-size: 0.8em; color: #d4d4d4;">0.00</span>
+                </div>
+            </div>
+            
+            <div class="stat-box">
+                <div class="stat-title">Neuron Activity</div>
+                <canvas id="neuronCanvas" width="200" height="200" style="width: 100%; background-color: #1e1e1e; border-radius: 4px;"></canvas>
+            </div>
+            
+            <div class="stat-box">
+                <div class="stat-title">Attention Heads</div>
+                <canvas id="attnCanvas" width="200" height="100" style="width: 100%; background-color: #1e1e1e; border-radius: 4px;"></canvas>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-title">Recent Thoughts (Tokens)</div>
+                <div id="recentTokens" style="font-family: monospace; font-size: 0.8em; color: #d4d4d4; background-color: #1e1e1e; padding: 5px; border-radius: 4px; min-height: 20px; word-wrap: break-word;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="header">
+            <h1>Continuous Thought Machine</h1>
+        </div>
+        <div class="messages" id="messages">
+            <div class="message ctm">Hallo! Ich bin CTM. Worüber möchtest du sprechen?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Schreibe eine Nachricht..." autocomplete="off">
+            <button onclick="sendMessage()">Senden</button>
+        </div>
+    </div>
+
+    <div class="sidebar sidebar-right">
+        <div>
+            <h2>Model Configuration</h2>
+            <div id="modelConfig">
+                <div class="info-item"><span class="info-label">Status</span><span class="info-value" id="status">Verbinden...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const statusDiv = document.getElementById('status');
+        const modelConfigDiv = document.getElementById('modelConfig');
+        
+        // Stats elements
+        const confidenceBar = document.getElementById('confidenceBar');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const syncBar = document.getElementById('syncBar');
+        const syncValue = document.getElementById('syncValue');
+        const speechBar = document.getElementById('speechBar');
+        const speechValue = document.getElementById('speechValue');
+        const speechStatus = document.getElementById('speechStatus');
+        const neuronCanvas = document.getElementById('neuronCanvas');
+        const neuronCtx = neuronCanvas.getContext('2d');
+        const attnCanvas = document.getElementById('attnCanvas');
+        const attnCtx = attnCanvas.getContext('2d');
+        const recentTokensDiv = document.getElementById('recentTokens');
+        
+        let currentCtmMessageDiv = null;
+
+        socket.on('connect', () => {
+            statusDiv.textContent = "Verbunden";
+            statusDiv.style.color = "#4ec9b0";
+        });
+
+        socket.on('disconnect', () => {
+            statusDiv.textContent = "Getrennt";
+            statusDiv.style.color = "#f48771";
+        });
+        
+        socket.on('model_info', (info) => {
+            // Clear existing config except status
+            // Actually let's just append
+            const keys = ['d_model', 'd_embedding', 'heads', 'iterations', 'vocab_size', 'synapse_depth', 'memory_length'];
+            
+            keys.forEach(key => {
+                if (info[key] !== undefined) {
+                    const div = document.createElement('div');
+                    div.className = 'info-item';
+                    div.innerHTML = `<span class="info-label">${key}</span><span class="info-value">${info[key]}</span>`;
+                    modelConfigDiv.appendChild(div);
+                }
+            });
+        });
+        
+        socket.on('ctm_stats', (stats) => {
+            // Update confidence
+            const conf = stats.confidence * 100;
+            confidenceBar.style.width = `${Math.min(conf, 100)}%`;
+            confidenceValue.textContent = `${conf.toFixed(1)}%`;
+            
+            // Update sync (normalize arbitrarily for display, say max 50)
+            const sync = stats.sync_magnitude;
+            const syncPct = Math.min((sync / 50) * 100, 100);
+            syncBar.style.width = `${syncPct}%`;
+            syncValue.textContent = sync.toFixed(2);
+            
+            // Update Speech Gate
+            const speech = stats.speech_score || 0;
+            const speechPct = Math.min(speech * 100, 100);
+            speechBar.style.width = `${speechPct}%`;
+            speechValue.textContent = speech.toFixed(2);
+
+            if (speech > 0.5) {
+                speechStatus.textContent = "SPEAKING";
+                speechStatus.style.color = "#4ec9b0"; // Green-ish
+            } else {
+                speechStatus.textContent = "THINKING";
+                speechStatus.style.color = "#858585"; // Grey
+            }
+            
+            // Update recent tokens
+            if (stats.recent_tokens) {
+                // Join with spaces or just concat
+                // Escape HTML to prevent injection if tokens contain < >
+                const safeTokens = stats.recent_tokens.map(t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+                recentTokensDiv.innerHTML = safeTokens.join(' ');
+            }
+
+            // Draw neurons
+            if (stats.neuron_activity) {
+                const neurons = stats.neuron_activity;
+                const count = neurons.length;
+                const cols = Math.ceil(Math.sqrt(count));
+                const rows = Math.ceil(count / cols);
+                
+                const w = neuronCanvas.width / cols;
+                const h = neuronCanvas.height / rows;
+                
+                neuronCtx.clearRect(0, 0, neuronCanvas.width, neuronCanvas.height);
+                
+                for (let i = 0; i < count; i++) {
+                    const val = neurons[i];
+                    const x = (i % cols) * w;
+                    const y = Math.floor(i / cols) * h;
+                    
+                    // Normalize value for color (assuming roughly -1 to 1 or similar, but activations can be larger)
+                    // Let's use a sigmoid-like visualization or just clamp
+                    // Blue for negative, Red for positive
+                    
+                    const intensity = Math.tanh(val); // -1 to 1
+                    
+                    let r = 0, g = 0, b = 0;
+                    if (intensity > 0) {
+                        r = Math.floor(intensity * 255);
+                        g = Math.floor(intensity * 50); // slight orange tint
+                    } else {
+                        b = Math.floor(-intensity * 255);
+                        g = Math.floor(-intensity * 50); // slight cyan tint
+                    }
+                    
+                    neuronCtx.fillStyle = `rgb(${r},${g},${b})`;
+                    neuronCtx.fillRect(x, y, w-1, h-1); // -1 for gap
+                }
+            }
+            
+            // Draw Attention
+            if (stats.attention) {
+                const attn = stats.attention; // [Heads, SeqLen]
+                const numHeads = attn.length;
+                const seqLen = attn[0].length;
+                
+                attnCtx.clearRect(0, 0, attnCanvas.width, attnCanvas.height);
+                
+                const rowHeight = attnCanvas.height / numHeads;
+                const colWidth = attnCanvas.width / seqLen;
+                
+                for (let h = 0; h < numHeads; h++) {
+                    for (let t = 0; t < seqLen; t++) {
+                        const val = attn[h][t]; // 0 to 1
+                        
+                        // Heatmap style: Dark to Bright Yellow/Green
+                        const intensity = Math.min(val * 5, 1.0); // Boost visibility
+                        const r = Math.floor(intensity * 255);
+                        const g = Math.floor(intensity * 255);
+                        const b = Math.floor(intensity * 100);
+                        
+                        attnCtx.fillStyle = `rgb(${r},${g},${b})`;
+                        attnCtx.fillRect(t * colWidth, h * rowHeight, colWidth, rowHeight - 1);
+                    }
+                }
+            }
+        });
+
+        socket.on('ctm_token', (data) => {
+            const token = data.token;
+            
+            // If we don't have a current message div for CTM, create one
+            if (!currentCtmMessageDiv) {
+                currentCtmMessageDiv = document.createElement('div');
+                currentCtmMessageDiv.className = 'message ctm';
+                messagesDiv.appendChild(currentCtmMessageDiv);
+            }
+            
+            // Append token
+            currentCtmMessageDiv.textContent += token;
+            scrollToBottom();
+        });
+
+        socket.on('ctm_pause', () => {
+            // CTM finished a thought/sentence
+            currentCtmMessageDiv = null;
+        });
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (text) {
+                // Add user message to UI
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message user';
+                msgDiv.textContent = text;
+                messagesDiv.appendChild(msgDiv);
+                scrollToBottom();
+
+                // Send to server
+                socket.emit('user_message', { text: text });
+                userInput.value = '';
+                
+                // Reset CTM message div so next response starts new bubble
+                currentCtmMessageDiv = null;
+            }
+        }
+
+        function scrollToBottom() {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
