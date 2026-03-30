@@ -29,19 +29,13 @@ Before deployment, you **must** configure the model parameters to match your spe
 * **Development Status:** This project is **Vibecoded**. While major bugs have been addressed, it remains highly experimental. Expect the unexpected.
 
 ### Model Architecture (Training Baseline)
-* **Attention Heads:** 8–16 (Stable performance range).
-* **Neuron Count:** ~2,048.
+* **Attention Heads:** 8–32 (Stable performance range).
+* **Neuron Count:** ~2,048. (or more)
 * **Operational Mode:** Continuous stream (Asynchronous token production).
 
 ---
 
-## 🚀 Getting Started
-
-To prevent accidental deployment by those unfamiliar with the risks, **coding skills are a hard requirement.** 1. Clone the repository.
-2. Adjust `config.py` to match your local RAM and CPU/GPU overhead.
-3. Initialize the continuous thought loop.
-
-> **Note:** If you think "Open-Sourced" safety-labeled models are powerful, CTM-Text will change your perspective. It makes current safety benchmarks look like a joke.
+you need to run 08_web_chat.py after you finished your env
 
 ---
 
