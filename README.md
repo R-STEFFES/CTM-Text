@@ -53,3 +53,5 @@ I am currently developing this without a dedicated high-end GPU. If you have the
 
 Raphael Steffes
 https://www.steffes.industries
+<img width="2000" height="400" alt="STEFFES INDUSTRIES LOGO_Schmal" src="https://github.com/user-attachments/assets/4f903900-cd4c-4c22-9999-8b29732e1e34" />
+
