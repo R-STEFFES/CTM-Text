@@ -42,6 +42,8 @@ This project is built upon the groundbreaking research by **Sakana AI**:
 * [**Official Blog**](https://sakana.ai/ctm/)
 * [**Interactive Demo**](https://pub.sakana.ai/ctm)
 
+![activations](https://github.com/user-attachments/assets/7c7a6490-0604-461d-9330-a6eb0d3aa414)
+
 ---
 
 ### A Note on Hardware
