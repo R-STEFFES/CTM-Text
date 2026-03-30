@@ -48,6 +48,16 @@ This project is built upon the groundbreaking research by **Sakana AI**:
 
 ### A Note on Hardware
 I am currently developing this without a dedicated high-end GPU. If you have the VRAM to push this model to its absolute limits, I am interested in seeing the results. 
+<img width="1606" height="950" alt="Working" src="https://github.com/user-attachments/assets/def37d8b-3d05-4052-94ea-ba402c0c6cd3" />
+This is what it should look like after Finishing your Training. I This Example is Trained on a Ryzen 5 2600 without GPU and about 10h Of traing with:
+d_model 2048
+d_embedding 1024
+heads 16
+iterations 48
+vocab_size 50257
+memory_length 15
+
+It's Dosent Look Specail at First but Remeber This is not an LLM. Its more Like a Baby; its thinks already but cant speak that well. BUT - if you Train CTM-Text on a GPU You will see Way Better Results.
 
 **Proceed at your own risk.**
 
