@@ -58,3 +58,6 @@ This project is built upon the groundbreaking research by **Sakana AI**:
 I am currently developing this without a dedicated high-end GPU. If you have the VRAM to push this model to its absolute limits, I am interested in seeing the results. 
 
 **Proceed at your own risk.**
+
+Raphael Steffes
+https://www.steffes.industries
